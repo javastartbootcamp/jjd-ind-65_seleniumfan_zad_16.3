@@ -5,7 +5,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
+import java.util.Arrays;
+import java.util.Scanner;
 
 public class Main {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -17,28 +20,18 @@ public class Main {
         main.run(new Scanner(System.in));
     }
 
-    public LocalDateTime additionBasedOnSign(LocalDateTime dateTime, char letter, int amount) {
-        return switch (letter) {
-            case 'y' -> dateTime.plusYears(amount);
-            case 'M' -> dateTime.plusMonths(amount);
-            case 'd' -> dateTime.plusDays(amount);
-            case 'h' -> dateTime.plusHours(amount);
-            case 'm' -> dateTime.plusMinutes(amount);
-            case 's' -> dateTime.plusSeconds(amount);
-            default -> throw new IllegalStateException("Unexpected value: " + letter);
-        };
-    }
-
-    public LocalDateTime substractionBasedOnSign(LocalDateTime dateTime, char letter, int amount) {
-        return switch (letter) {
-            case 'y' -> dateTime.minusYears(amount);
-            case 'M' -> dateTime.minusMonths(amount);
-            case 'd' -> dateTime.minusDays(amount);
-            case 'h' -> dateTime.minusHours(amount);
-            case 'm' -> dateTime.minusMinutes(amount);
-            case 's' -> dateTime.minusSeconds(amount);
-            default -> throw new IllegalStateException("Unexpected value: " + letter);
-        };
+    public LocalDateTime shiftTime(LocalDateTime dateTime, char unit, int amount, String sign) {
+        TemporalUnit temporalUnit;
+        switch (unit) {
+            case 'y' -> temporalUnit = ChronoUnit.YEARS;
+            case 'M' -> temporalUnit = ChronoUnit.MONTHS;
+            case 'd' -> temporalUnit = ChronoUnit.DAYS;
+            case 'h' -> temporalUnit = ChronoUnit.HOURS;
+            case 'm' -> temporalUnit = ChronoUnit.MINUTES;
+            case 's' -> temporalUnit = ChronoUnit.SECONDS;
+            default -> throw new IllegalStateException("Unexpected value: " + unit);
+        }
+        return sign.equals("-") ? dateTime.minus(amount, temporalUnit) : dateTime.plus(amount, temporalUnit);
     }
 
     public void run(Scanner scanner) {
@@ -73,11 +66,7 @@ public class Main {
         for (int i = 0; i < signs.length; i++) {
             int number = Integer.parseInt(fields[i].substring(0, fields[i].length() - 1));
             char letter = fields[i].charAt(fields[i].length() - 1);
-            switch (signs[i]) {
-                case "+" -> dateTime = additionBasedOnSign(dateTime, letter, number);
-                case "-" -> dateTime = substractionBasedOnSign(dateTime, letter, number);
-                default -> throw new IllegalStateException("Unexpected value: " + signs[i]);
-            }
+            dateTime = shiftTime(dateTime, letter, number, signs[i]);
         }
         return dateTime;
     }
